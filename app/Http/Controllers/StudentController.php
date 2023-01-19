@@ -44,25 +44,27 @@ class StudentController extends Controller
             }, function ($q) use ($request) {
                 $q->orderBy('id', 'asc');
             })
-            ->get();
+            ->paginate(20)
+            ->withQueryString()
+            ->through(fn ($student) => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'email' => $student->email,
+                'lessons_count' => $student->lessons_count,
+                'view_lessons_count' => $student->view_lessons_count,
+                'position' => $student->position,
+                'score' => $student->score,
+            ]);
         /*->each(function ($q) {
             $q->rating = $q->lessons->sum('pivot.score');
         });*/
 
+//        dd($students);
+
         $allLessonsCount = Lesson::count();
 
         return Inertia::render('Users/Index', [
-            'students' => $students->map(function ($student) {
-                return [
-                    'id' => $student->id,
-                    'name' => $student->name,
-                    'email' => $student->email,
-                    'lessons_count' => $student->lessons_count,
-                    'view_lessons_count' => $student->view_lessons_count,
-                    'position' => $student->position,
-                    'score' => $student->score,
-                ];
-            }),
+            'students' => $students,
             'allLessonsCount' => $allLessonsCount
         ]);
     }
