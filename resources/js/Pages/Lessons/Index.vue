@@ -1,24 +1,23 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {Head} from '@inertiajs/inertia-vue3';
-import Sort from "@/Components/Sort.vue";
 import Modal from "@/Components/Modal.vue";
+import MTable from "@/Components/UI/Table/MTable.vue";
+import MTColumn from "@/Components/UI/Table/MTColumn.vue";
 import {ref} from "vue";
 
 const props = defineProps({
-    lessons: Array
+    response: Object,
 })
 
-const lessonStudents = ref(null);
+const selectedLesson = ref(null);
 
 const onModalClose = () => {
-    console.log('onModalClose', onModalClose);
-    lessonStudents.value = null
+    selectedLesson.value = null
 }
 
-
-const uploadData = async (student) => {
-    lessonStudents.value = await (await fetch(`/api/lessons/${student.id}/students?viewOnly=1`)).json();
+const onClickName = (lesson) => {
+    selectedLesson.value = lesson;
 }
 </script>
 
@@ -32,82 +31,35 @@ const uploadData = async (student) => {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th scope="col" class="px-6 py-3">
-                                Название
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                Описание
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                <Sort label="Просмотров" attribute="view_users_count"/>
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr
-                            v-for="lesson in lessons"
-                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                        >
-                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                <a href @click.prevent="uploadData(lesson)">{{ lesson.name }}</a>
-                            </th>
-                            <td class="px-6 py-4">
-                                {{ lesson.description }}
-                            </td>
-                            <td class="px-6 py-4">
-                                {{ lesson.view_users_count }}
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <MTable
+                    :value="response.data"
+                    :paginationLinks="response.links"
+                >
+                    <MTColumn attribute="name" label="Название" :clickable="true">
+                        <template #body="{row, column}">
+                            <a href @click.prevent.stop="onClickName(row)">{{ row.name }}</a>
+                        </template>
+                    </MTColumn>
+                    <MTColumn attribute="description" label="Описание"></MTColumn>
+                    <MTColumn attribute="view_users_count" label="Просмотров" :sortable="true"></MTColumn>
+                </MTable>
             </div>
         </div>
     </AuthenticatedLayout>
 
-    <Modal :show="!!lessonStudents" @close="onModalClose">
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                    <th scope="col" class="px-6 py-3">
-                        ФИО
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Email
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Прогресс
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Баллы
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr
-                    v-for="student in lessonStudents"
-                    class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                >
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ student.name }}
-                    </th>
-                    <td class="px-6 py-4">
-                        {{ student.email }}
-                    </td>
-                    <td class="px-6 py-4">
-                        {{ student.pivot.progress }}%
-                    </td>
-                    <td class="px-6 py-4">
-                        {{ student.pivot.score }}
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+    <Modal :show="!!selectedLesson" @close="onModalClose">
+        <MTable
+            :resourceUrl="`/api/lessons/${selectedLesson.id}/students?viewOnly=1`"
+            :isInModal="true"
+        >
+            <MTColumn attribute="name" label="Название"></MTColumn>
+            <MTColumn attribute="email" label="Email"></MTColumn>
+            <MTColumn attribute="pivot_progress" label="Прогресс" :sortable="true">
+                <template #body="{row}">
+                    {{ row.pivot_progress }}%
+                </template>
+            </MTColumn>
+            <MTColumn attribute="pivot_score" label="Баллы" :sortable="true"></MTColumn>
+        </MTable>
     </Modal>
 </template>

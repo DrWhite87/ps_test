@@ -15,7 +15,7 @@ class StudentController extends Controller
         DB::statement("SET @position = 0");
         DB::statement("SET @prev_rating = 0");
 
-        $students = DB::query()->fromSub(function ($query) {
+        $response = DB::query()->fromSub(function ($query) {
             $query->from('u')->fromSub(function ($query2) {
                 $query2->from('users')->select(DB::raw("`users`.*,
             (
@@ -59,12 +59,12 @@ class StudentController extends Controller
             $q->rating = $q->lessons->sum('pivot.score');
         });*/
 
-//        dd($students);
+//        dd($response);
 
         $allLessonsCount = Lesson::count();
 
         return Inertia::render('Users/Index', [
-            'students' => $students,
+            'response' => $response,
             'allLessonsCount' => $allLessonsCount
         ]);
     }

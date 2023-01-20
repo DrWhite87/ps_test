@@ -23,17 +23,18 @@ class LessonController extends Controller
             }
 
             $q->orderBy($sortAttribute, $sortDirection);
-        })->get();
+        })
+            ->paginate(20)
+            ->withQueryString()
+            ->through(fn($lesson) => [
+                'id' => $lesson->id,
+                'name' => $lesson->name,
+                'description' => $lesson->description,
+                'view_users_count' => $lesson->view_users_count,
+            ]);
 
         return Inertia::render('Lessons/Index', [
-            'lessons' => $lessons->map(function ($lesson) {
-                return [
-                    'id' => $lesson->id,
-                    'name' => $lesson->name,
-                    'description' => $lesson->description,
-                    'view_users_count' => $lesson->view_users_count,
-                ];
-            }),
+            'response' => $lessons
         ]);
     }
 }

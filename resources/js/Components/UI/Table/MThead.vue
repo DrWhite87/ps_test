@@ -22,7 +22,12 @@ defineProps({
             class="px-6 py-3"
         >
             <template v-if="!column.props.sortable">{{ column.props.label }}</template>
-            <MTHeadSort v-else :label="column.props.label" :attribute="column.props.attribute"/>
+            <MTHeadSort
+                v-else
+                :label="column.props.label"
+                :attribute="column.props.attribute"
+                @reloadData="url => $emit('reloadData', url)"
+            />
         </th>
     </tr>
     </thead>

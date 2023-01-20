@@ -19,9 +19,26 @@ class ApiLessonController extends Controller
                 $students->wherePivot('view_at', '<>', null);;
             }
 
-            $students = $students->get();
+            $response = $students
+                ->when(!empty($request->query('sort')), function ($q) use ($request) {
+                    $sortAttribute = $request->query('sort');
+                    $sortDirection = 'ASC';
+                    if (strncmp($sortAttribute, '-', 1) === 0) {
+                        $sortDirection = 'DESC';
+                        $sortAttribute = substr($sortAttribute, 1);
+                    }
+                    $q->orderBy($sortAttribute, $sortDirection);
+                })->paginate(20)
+                ->withQueryString()
+                ->through(fn($lesson) => [
+                    'id' => $lesson->id,
+                    'name' => $lesson->name,
+                    'email' => $lesson->email,
+                    'pivot_progress' => $lesson->pivot->progress,
+                    'pivot_score' => $lesson->pivot->score,
+                ]);
         }
 
-        return response()->json($students);
+        return response()->json($response);
     }
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import {ref, computed, inject} from "vue";
 import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
@@ -13,17 +13,22 @@ const props = defineProps({
     },
 });
 
+const resourceUrl = inject('resourceUrl');
+
 const downFill = ref("lightgray");
 const upFill = ref("lightgray");
 const sortLink = computed(() => {
-    let url = new URL(document.location);
+    let url = new URL(resourceUrl.value || document.location, document.location.origin);
     let sortValue = url.searchParams.get("sort");
+    console.log('url', url.href, 'sortValue', sortValue, 'props.attribute', props.attribute);
     if (sortValue === props.attribute) {
         url.searchParams.set("sort", "-" + props.attribute);
         upFill.value = "black";
+        downFill.value = "lightgray";
     } else if (sortValue === "-" + props.attribute) {
         url.searchParams.delete("sort");
         downFill.value = "black";
+        upFill.value = "lightgray";
     } else {
         url.searchParams.set("sort", props.attribute);
         downFill.value = "lightgray";
@@ -34,9 +39,10 @@ const sortLink = computed(() => {
 </script>
 <template>
     <div class="flex items-center gap-4">
-        <Link
+        <Link v-if="!resourceUrl"
             :href="sortLink"
         >{{ label }}</Link>
+        <a v-else :href="sortLink" @click.prevent="$emit('reloadData', sortLink)">{{ label }}</a>
         <div class="flex flex-col">
             <svg
                 class="inline-block w-2 h-2"
