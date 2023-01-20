@@ -11,7 +11,7 @@ class ApiLessonController extends Controller
     public function students(Request $request, $id)
     {
         $lesson = Lesson::findOrFail($id);
-        $students = collect();
+        $response = collect();
 
         if ($lesson) {
             $students = $lesson->users();
