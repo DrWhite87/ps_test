@@ -1,9 +1,11 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import {Head} from '@inertiajs/inertia-vue3';
+import {Link, Head, useForm} from '@inertiajs/inertia-vue3';
+import {Inertia} from "@inertiajs/inertia";
 import Modal from "@/Components/Modal.vue";
 import MTable from "@/Components/UI/Table/MTable.vue";
 import MTColumn from "@/Components/UI/Table/MTColumn.vue";
+import PrimaryButton from '@/Components/PrimaryButton.vue';
 import {ref} from 'vue';
 
 const props = defineProps({
@@ -11,10 +13,15 @@ const props = defineProps({
     allLessonsCount: Number,
 })
 
+const form = useForm({});
 const selectedStudent = ref(null);
 
 const getProgressPercent = (viewLessonsCount) => {
     return (viewLessonsCount * 100 / props.allLessonsCount).toFixed();
+}
+
+const onModalClose = () => {
+    selectedStudent.value = null
 }
 
 const onClickName = (student) => {
@@ -22,6 +29,13 @@ const onClickName = (student) => {
     selectedStudent.value = student;
 }
 
+// console.log('$inertia', inertia);
+
+const destroy = (student) => {
+    if (confirm("Are you sure you want to Delete")) {
+        form.delete(route('students.destroy', {id: student.id}));
+    }
+}
 </script>
 
 <template>
@@ -29,7 +43,14 @@ const onClickName = (student) => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Студенты</h2>
+            <div class="flex justify-between">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Студенты</h2>
+                <Link class="ml-4" :href="route('students.create')">
+                    <PrimaryButton>
+                        Создать
+                    </PrimaryButton>
+                </Link>
+            </div>
         </template>
 
         <div class="py-12">
@@ -52,6 +73,12 @@ const onClickName = (student) => {
                     <MTColumn attribute="position" label="Место в рейтинге" :sortable="true">
                         <template #body="{row}">
                             {{ row.position || '-' }} ({{ row.score }})
+                        </template>
+                    </MTColumn>
+                    <MTColumn attribute="actions" label="Дествия">
+                        <template #body="{row}">
+                            <Link :href="route('students.edit', {id: row.id})" class="mr-1">Ред.</Link>
+                            <a href @click.prevent="destroy(row)">Уд.</a>
                         </template>
                     </MTColumn>
                 </MTable>

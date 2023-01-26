@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Lesson;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class LessonController extends Controller
@@ -36,5 +38,17 @@ class LessonController extends Controller
         return Inertia::render('Lessons/Index', [
             'response' => $lessons
         ]);
+    }
+
+    /**
+     * Delete
+     */
+    public function destroy($id): RedirectResponse
+    {
+        $student = Lesson::findOrFail($id);
+
+        $student->delete();
+
+        return Redirect::route('lessons.index');
     }
 }

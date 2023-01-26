@@ -5,6 +5,7 @@ import Modal from "@/Components/Modal.vue";
 import MTable from "@/Components/UI/Table/MTable.vue";
 import MTColumn from "@/Components/UI/Table/MTColumn.vue";
 import {ref} from "vue";
+import {Inertia} from "@inertiajs/inertia";
 
 const props = defineProps({
     response: Object,
@@ -18,6 +19,16 @@ const onModalClose = () => {
 
 const onClickName = (lesson) => {
     selectedLesson.value = lesson;
+}
+
+const destroy = (lesson) => {
+    if (confirm("Are you sure you want to Delete")) {
+        Inertia.delete(route('lessons.destroy', {id: lesson.id}), {
+            onSuccess: (data) => {
+                // Inertia.reload();
+            }
+        });
+    }
 }
 </script>
 
@@ -42,6 +53,12 @@ const onClickName = (lesson) => {
                     </MTColumn>
                     <MTColumn attribute="description" label="Описание"></MTColumn>
                     <MTColumn attribute="view_users_count" label="Просмотров" :sortable="true"></MTColumn>
+                    <MTColumn attribute="actions" label="Дествия">
+                        <template #body="{row}">
+                            <Link :href="route('lessons.edit', {id: row.id})" class="mr-1">Ред.</Link>
+                            <a href @click.prevent="destroy(row)">Уд.</a>
+                        </template>
+                    </MTColumn>
                 </MTable>
             </div>
         </div>

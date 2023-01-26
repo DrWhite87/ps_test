@@ -38,8 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/students', [StudentController::class, 'index'])->name('students');
-    Route::get('/lessons', [LessonController::class, 'index'])->name('lessons');
+    Route::resource('students', StudentController::class);
+    Route::resource('lessons', LessonController::class);
 
     Route::prefix('api')->group(function () {
         Route::get('/students/{id}/lessons', [ApiStudentController::class, 'lessons'])->name('students.lessons');

@@ -3,7 +3,7 @@ import MThead from "./MThead.vue";
 import MTBody from "./MTBody.vue";
 import MTFooter from "./MTFooter.vue";
 import MTPagination from "./MTPagination.vue";
-import {computed, provide, useSlots, ref, onMounted} from 'vue';
+import {computed, provide, useSlots, ref, onMounted, watch} from 'vue';
 
 const props = defineProps({
     value: {
@@ -50,14 +50,23 @@ const fetchResources = (url) => {
         initialized.value = true;
     });
 }
-
-if (props.resourceUrl) {
-    fetchResources(props.resourceUrl);
-} else {
-    resources.value = props.value;
-    resourcePaginationLinks.value = props.paginationLinks;
-    initialized.value = true;
+const setData = () => {
+    if (props.resourceUrl) {
+        fetchResources(props.resourceUrl);
+    } else {
+        resources.value = props.value;
+        resourcePaginationLinks.value = props.paginationLinks;
+        initialized.value = true;
+    }
 }
+
+setData();
+
+watch(() => props.value, () => {
+    console.log('123123');
+    setData();
+});
+
 
 provide('resourceUrl', mResourceUrl);
 

@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Lesson;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class StudentController extends Controller
 {
@@ -46,7 +49,7 @@ class StudentController extends Controller
             })
             ->paginate(20)
             ->withQueryString()
-            ->through(fn ($student) => [
+            ->through(fn($student) => [
                 'id' => $student->id,
                 'name' => $student->name,
                 'email' => $student->email,
@@ -67,5 +70,67 @@ class StudentController extends Controller
             'response' => $response,
             'allLessonsCount' => $allLessonsCount
         ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Users/Create', [
+            'status' => session('status'),
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+//        dd(2324);
+//        sleep(5);
+        $input = $request->validate([
+            'name' => ['required', 'max:150'],
+            'email' => ['required', 'max:50', 'email'],
+        ]);
+
+        $input['role'] = User::USER_ROLE_STUDENT;
+        $input['password'] = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+
+        User::create($input);
+
+        return Redirect::route('students.index');
+    }
+
+    /**
+     * Display the user's profile form.
+     */
+    public function edit(Request $request, $id): Response
+    {
+        return Inertia::render('Users/Edit', [
+            'student' => User::students()->findOrFail($id),
+        ]);
+    }
+
+    /**
+     * Display the user's profile form.
+     */
+    public function update(Request $request, $id): RedirectResponse
+    {
+        $student = User::students()->findOrFail($id);
+        $student->fill($request->validate([
+            'name' => ['required', 'max:150'],
+            'email' => ['required', 'max:50', 'email'],
+        ]));
+
+        $student->save();
+
+        return Redirect::route('students.index');
+    }
+
+    /**
+     * Delete
+     */
+    public function destroy($id): RedirectResponse
+    {
+        $student = User::students()->findOrFail($id);
+
+        $student->delete();
+
+        return Redirect::route('students.index');
     }
 }
