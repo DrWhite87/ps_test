@@ -6,36 +6,34 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-
-const props = defineProps({
-    student: Object,
-});
+import TextAreaInput from "@/Components/TextAreaInput.vue";
 
 const form = useForm({
-    name: props.student.name,
-    email: props.student.email,
+    name: null,
+    description: null,
+    duration: null,
 })
 
 function submit() {
-    form.patch(route('students.update', {id: props.student.id}))
+    form.post(route('lessons.store'))
 }
 </script>
 
 <template>
-    <Head title="Edit student"/>
+    <Head title="Add lesson"/>
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit student</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Add lesson</h2>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <form @submit.prevent="submit">
+                        <form @submit.prevent="form.post(route('lessons.store'))">
                             <div>
-                                <InputLabel for="name" value="Name" />
+                                <InputLabel for="name" value="Name"/>
 
                                 <TextInput
                                     id="name"
@@ -45,23 +43,34 @@ function submit() {
                                     autofocus
                                 />
 
-                                <InputError class="mt-2" :message="form.errors.name" />
+                                <InputError class="mt-2" :message="form.errors.name"/>
                             </div>
                             <div class="mt-4">
-                                <InputLabel for="email" value="Email" />
+                                <InputLabel for="description" value="Description"/>
 
-                                <TextInput
-                                    id="email"
-                                    type="email"
+                                <TextAreaInput
+                                    id="description"
                                     class="mt-1 block w-full"
-                                    v-model="form.email"
+                                    v-model="form.description"
                                 />
 
-                                <InputError class="mt-2" :message="form.errors.email" />
+                                <InputError class="mt-2" :message="form.errors.description"/>
+                            </div>
+                            <div class="mt-4">
+                                <InputLabel for="duration" value="Duration"/>
+
+                                <TextInput
+                                    id="duration"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.duration"
+                                />
+
+                                <InputError class="mt-2" :message="form.errors.duration"/>
                             </div>
                             <div class="flex items-center justify-end mt-4">
                                 <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                                    Save
+                                    Add
                                 </PrimaryButton>
                             </div>
                         </form>

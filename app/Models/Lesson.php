@@ -9,6 +9,8 @@ class Lesson extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */

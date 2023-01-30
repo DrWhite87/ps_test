@@ -15,10 +15,21 @@ class StudentController extends Controller
 {
     public function index(Request $request)
     {
+        $perPage = 20;
+        $page = $request->input("page", 0);
+        $skip = ($page - 1) * $perPage;
+        if ($perPage < 1) {
+            $perPage = 1;
+        }
+        if ($skip < 0) {
+            $skip = 0;
+        }
+
+        $totalCount = User::students()->count();
+
         DB::statement("SET @position = 0");
         DB::statement("SET @prev_rating = 0");
-
-        $response = DB::query()->fromSub(function ($query) {
+        $results = DB::query()->fromSub(function ($query) {
             $query->from('u')->fromSub(function ($query2) {
                 $query2->from('users')->select(DB::raw("`users`.*,
             (
@@ -47,42 +58,51 @@ class StudentController extends Controller
             }, function ($q) use ($request) {
                 $q->orderBy('id', 'asc');
             })
-            ->paginate(20)
-            ->withQueryString()
-            ->through(fn($student) => [
-                'id' => $student->id,
-                'name' => $student->name,
-                'email' => $student->email,
-                'lessons_count' => $student->lessons_count,
-                'view_lessons_count' => $student->view_lessons_count,
-                'position' => $student->position,
-                'score' => $student->score,
-            ]);
-        /*->each(function ($q) {
-            $q->rating = $q->lessons->sum('pivot.score');
-        });*/
+            ->take($perPage)
+            ->skip($skip)
+            ->get();
 
-//        dd($response);
+        $params = $request->except("page");
 
+        $students = new \Illuminate\Pagination\LengthAwarePaginator($results, $totalCount, $perPage, $page, [
+            'path' => url()->current() . (!empty($params) ? '?' : '') . http_build_query($params),
+        ]);
+        $students = $students->through(fn($student) => [
+            'id' => $student->id,
+            'name' => $student->name,
+            'email' => $student->email,
+            'lessons_count' => $student->lessons_count,
+            'view_lessons_count' => $student->view_lessons_count,
+            'position' => $student->position,
+            'score' => $student->score,
+        ]);
+
+
+        /* $queries = DB::getQueryLog();
+         dd($queries);*/
         $allLessonsCount = Lesson::count();
 
-        return Inertia::render('Users/Index', [
-            'response' => $response,
+        return Inertia::render('Users/Index',[
+            'response' => $students,
             'allLessonsCount' => $allLessonsCount
         ]);
     }
 
+    /**
+     * Display create student form.
+     */
     public function create()
     {
-        return Inertia::render('Users/Create', [
-            'status' => session('status'),
-        ]);
+        return Inertia::render('Users/Create');
     }
 
+    /**
+     * Store student.
+     * @param Request $request
+     * @return RedirectResponse
+     */
     public function store(Request $request)
     {
-//        dd(2324);
-//        sleep(5);
         $input = $request->validate([
             'name' => ['required', 'max:150'],
             'email' => ['required', 'max:50', 'email'],
@@ -93,11 +113,14 @@ class StudentController extends Controller
 
         User::create($input);
 
-        return Redirect::route('students.index');
+        return redirect()->route('students.index')->with(['success' => 'Added']);
     }
 
     /**
-     * Display the user's profile form.
+     * Display edit student form.
+     * @param Request $request
+     * @param $id
+     * @return Response
      */
     public function edit(Request $request, $id): Response
     {
@@ -107,7 +130,10 @@ class StudentController extends Controller
     }
 
     /**
-     * Display the user's profile form.
+     * Update student.
+     * @param Request $request
+     * @param $id
+     * @return RedirectResponse
      */
     public function update(Request $request, $id): RedirectResponse
     {
@@ -119,11 +145,13 @@ class StudentController extends Controller
 
         $student->save();
 
-        return Redirect::route('students.index');
+        return redirect()->back()->with(['success' => 'Updated']);
     }
 
     /**
-     * Delete
+     * Delete student
+     * @param $id
+     * @return RedirectResponse
      */
     public function destroy($id): RedirectResponse
     {
@@ -131,6 +159,6 @@ class StudentController extends Controller
 
         $student->delete();
 
-        return Redirect::route('students.index');
+        return redirect()->route('students.index')->with(['success' => 'Deleted']);
     }
 }

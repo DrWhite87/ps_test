@@ -1,7 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {Link, Head, useForm} from '@inertiajs/inertia-vue3';
-import {Inertia} from "@inertiajs/inertia";
 import Modal from "@/Components/Modal.vue";
 import MTable from "@/Components/UI/Table/MTable.vue";
 import MTColumn from "@/Components/UI/Table/MTColumn.vue";
@@ -16,38 +15,39 @@ const props = defineProps({
 const form = useForm({});
 const selectedStudent = ref(null);
 
+/* calculate percent of view lessons */
 const getProgressPercent = (viewLessonsCount) => {
     return (viewLessonsCount * 100 / props.allLessonsCount).toFixed();
 }
 
+/* select selectedStudent and open modal */
+const onClickName = (student) => {
+    selectedStudent.value = student;
+}
+
+/* clear selectedStudent and close modal */
 const onModalClose = () => {
     selectedStudent.value = null
 }
 
-const onClickName = (student) => {
-    // fetchStudentLessons(`/api/students/${student.id}/lessons?viewOnly=1`);
-    selectedStudent.value = student;
-}
-
-// console.log('$inertia', inertia);
-
+/* destroy student */
 const destroy = (student) => {
     if (confirm("Are you sure you want to Delete")) {
-        form.delete(route('students.destroy', {id: student.id}));
+        form.delete(route('students.destroy', {id: student.id}), {preserveScroll: true});
     }
 }
 </script>
 
 <template>
-    <Head title="Студенты"/>
+    <Head title="Students"/>
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex justify-between">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Студенты</h2>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Students</h2>
                 <Link class="ml-4" :href="route('students.create')">
                     <PrimaryButton>
-                        Создать
+                        Add
                     </PrimaryButton>
                 </Link>
             </div>
@@ -59,7 +59,7 @@ const destroy = (student) => {
                     :value="response.data"
                     :paginationLinks="response.links"
                 >
-                    <MTColumn attribute="name" label="ФИО" :clickable="true">
+                    <MTColumn attribute="name" label="Name" :clickable="true">
                         <template #body="{row, column}">
                             <a href @click.prevent.stop="onClickName(row)">{{ row.name }}</a>
                         </template>
@@ -70,15 +70,15 @@ const destroy = (student) => {
                             {{ getProgressPercent(row.view_lessons_count) }}%
                         </template>
                     </MTColumn>
-                    <MTColumn attribute="position" label="Место в рейтинге" :sortable="true">
+                    <MTColumn attribute="position" label="Place" :sortable="true">
                         <template #body="{row}">
                             {{ row.position || '-' }} ({{ row.score }})
                         </template>
                     </MTColumn>
-                    <MTColumn attribute="actions" label="Дествия">
+                    <MTColumn attribute="actions" label="Actions">
                         <template #body="{row}">
-                            <Link :href="route('students.edit', {id: row.id})" class="mr-1">Ред.</Link>
-                            <a href @click.prevent="destroy(row)">Уд.</a>
+                            <Link :href="route('students.edit', {id: row.id})" class="mr-1">Edit</Link>
+                            <a href @click.prevent="destroy(row)">Delete</a>
                         </template>
                     </MTColumn>
                 </MTable>
@@ -91,14 +91,14 @@ const destroy = (student) => {
             :resourceUrl="`/api/students/${selectedStudent.id}/lessons?viewOnly=1`"
             :isInModal="true"
         >
-            <MTColumn attribute="name" label="Название"></MTColumn>
-            <MTColumn attribute="description" label="Описание"></MTColumn>
-            <MTColumn attribute="pivot_progress" label="Прогресс" :sortable="true">
+            <MTColumn attribute="name" label="Name"></MTColumn>
+            <MTColumn attribute="description" label="Description"></MTColumn>
+            <MTColumn attribute="pivot_progress" label="Progress" :sortable="true">
                 <template #body="{row}">
                     {{ row.pivot_progress }}%
                 </template>
             </MTColumn>
-            <MTColumn attribute="pivot_score" label="Баллы" :sortable="true"></MTColumn>
+            <MTColumn attribute="pivot_score" label="Score" :sortable="true"></MTColumn>
         </MTable>
     </Modal>
 </template>

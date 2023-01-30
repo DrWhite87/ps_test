@@ -6,18 +6,20 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import TextAreaInput from "@/Components/TextAreaInput.vue";
 
 const props = defineProps({
-    student: Object,
+    lesson: Object,
 });
 
 const form = useForm({
-    name: props.student.name,
-    email: props.student.email,
+    name: props.lesson.name,
+    description: props.lesson.description,
+    duration: props.lesson.duration,
 })
 
 function submit() {
-    form.patch(route('students.update', {id: props.student.id}))
+    form.patch(route('lessons.update', {id: props.lesson.id}))
 }
 </script>
 
@@ -48,16 +50,27 @@ function submit() {
                                 <InputError class="mt-2" :message="form.errors.name" />
                             </div>
                             <div class="mt-4">
-                                <InputLabel for="email" value="Email" />
+                                <InputLabel for="description" value="Description"/>
 
-                                <TextInput
-                                    id="email"
-                                    type="email"
+                                <TextAreaInput
+                                    id="description"
                                     class="mt-1 block w-full"
-                                    v-model="form.email"
+                                    v-model="form.description"
                                 />
 
-                                <InputError class="mt-2" :message="form.errors.email" />
+                                <InputError class="mt-2" :message="form.errors.description"/>
+                            </div>
+                            <div class="mt-4">
+                                <InputLabel for="duration" value="Duration"/>
+
+                                <TextInput
+                                    id="duration"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.duration"
+                                />
+
+                                <InputError class="mt-2" :message="form.errors.duration"/>
                             </div>
                             <div class="flex items-center justify-end mt-4">
                                 <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

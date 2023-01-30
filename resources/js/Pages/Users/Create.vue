@@ -18,11 +18,11 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Добавление студента"/>
+    <Head title="Add student"/>
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Добавление студента</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Add student</h2>
         </template>
 
         <div class="py-12">
@@ -31,7 +31,7 @@ function submit() {
                     <div class="p-6 text-gray-900">
                         <form @submit.prevent="form.post(route('students.store'))">
                             <div>
-                                <InputLabel for="name" value="ФИО"/>
+                                <InputLabel for="name" value="Name"/>
 
                                 <TextInput
                                     id="name"
@@ -57,7 +57,7 @@ function submit() {
                             </div>
                             <div class="flex items-center justify-end mt-4">
                                 <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                                    Добавить
+                                    Add
                                 </PrimaryButton>
                             </div>
                         </form>

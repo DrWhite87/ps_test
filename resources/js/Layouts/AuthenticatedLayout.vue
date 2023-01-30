@@ -6,7 +6,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/inertia-vue3';
-
+import FlashMessage from "@/Components/FlashMessage.vue";
 const showingNavigationDropdown = ref(false);
 </script>
 
@@ -33,10 +33,10 @@ const showingNavigationDropdown = ref(false);
                                     Dashboard
                                 </NavLink>
                                 <NavLink :href="route('students.index')" :active="route().current('students.index')">
-                                    Студенты
+                                    Students
                                 </NavLink>
                                 <NavLink :href="route('lessons.index')" :active="route().current('lessons.index')">
-                                    Уроки
+                                    Lessons
                                 </NavLink>
                             </div>
                         </div>
@@ -148,6 +148,9 @@ const showingNavigationDropdown = ref(false);
                     <slot name="header" />
                 </div>
             </header>
+
+            <!-- Flash Message -->
+            <FlashMessage></FlashMessage>
 
             <!-- Page Content -->
             <main>
